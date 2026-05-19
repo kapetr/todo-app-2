@@ -7,6 +7,7 @@ type FilterView = 'all' | 'active' | 'completed'
 function App() {
   const { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted } = useTodos()
   const [input, setInput] = useState('')
+  const [inputShake, setInputShake] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [filter, setFilter] = useState<FilterView>('all')
@@ -20,6 +21,10 @@ function App() {
   }, [editingId])
 
   function handleAdd() {
+    if (!input.trim()) {
+      setInputShake(true)
+      return
+    }
     addTodo(input)
     setInput('')
   }
@@ -72,11 +77,13 @@ function App() {
         <label htmlFor="new-todo" className="sr-only">New todo</label>
         <input
           id="new-todo"
-          className="add-input"
+          className={`add-input${inputShake ? ' add-input--shake' : ''}`}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={e => { setInput(e.target.value); setInputShake(false) }}
           onKeyDown={handleKeyDown}
+          onAnimationEnd={() => setInputShake(false)}
           placeholder="New todo…"
+          aria-invalid={inputShake}
         />
         <button className="add-btn" onClick={handleAdd}>
           Add

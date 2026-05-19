@@ -48,6 +48,9 @@ function App() {
     saveTodos(next)
   }
 
+  const activeCount = todos.filter(t => !t.completed).length
+  const completedCount = todos.length - activeCount
+
   return (
     <div style={{ maxWidth: 480, margin: '2rem auto', fontFamily: 'sans-serif', padding: '0 1rem' }}>
       <h1>Todo App</h1>
@@ -67,24 +70,43 @@ function App() {
         {todos.map(todo => (
           <li
             key={todo.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => toggleTodo(todo.id)}
-            onKeyDown={e => e.key === 'Enter' || e.key === ' ' ? toggleTodo(todo.id) : undefined}
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
               padding: '0.5rem',
               marginBottom: '0.5rem',
-              cursor: 'pointer',
-              textDecoration: todo.completed ? 'line-through' : 'none',
-              color: todo.completed ? '#888' : 'inherit',
               background: '#f5f5f5',
               borderRadius: 4,
             }}
           >
-            {todo.title}
+            <input
+              type="checkbox"
+              id={`todo-${todo.id}`}
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id)}
+              style={{ cursor: 'pointer', width: 18, height: 18, flexShrink: 0 }}
+            />
+            <label
+              htmlFor={`todo-${todo.id}`}
+              style={{
+                cursor: 'pointer',
+                textDecoration: todo.completed ? 'line-through' : 'none',
+                color: todo.completed ? '#888' : 'inherit',
+                flex: 1,
+              }}
+            >
+              {todo.title}
+            </label>
           </li>
         ))}
       </ul>
+      {todos.length > 0 && (
+        <footer style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#555', display: 'flex', justifyContent: 'space-between' }}>
+          <span>{activeCount} item{activeCount !== 1 ? 's' : ''} left</span>
+          {completedCount > 0 && <span>{completedCount} completed</span>}
+        </footer>
+      )}
     </div>
   )
 }

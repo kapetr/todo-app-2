@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface Todo {
   id: string
@@ -25,6 +25,16 @@ function saveTodos(todos: Todo[]): void {
 function App() {
   const [todos, setTodos] = useState<Todo[]>(loadTodos)
   const [input, setInput] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingId) {
+      editInputRef.current?.focus()
+      editInputRef.current?.select()
+    }
+  }, [editingId])
 
   function addTodo() {
     const title = input.trim()
@@ -46,6 +56,37 @@ function App() {
     const next = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
     setTodos(next)
     saveTodos(next)
+  }
+
+  function startEdit(todo: Todo) {
+    setEditingId(todo.id)
+    setEditValue(todo.title)
+  }
+
+  function commitEdit(id: string) {
+    const trimmed = editValue.trim()
+    let next: Todo[]
+    if (!trimmed) {
+      next = todos.filter(t => t.id !== id)
+    } else {
+      next = todos.map(t => t.id === id ? { ...t, title: trimmed } : t)
+    }
+    setTodos(next)
+    saveTodos(next)
+    setEditingId(null)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  function handleEditKeyDown(e: React.KeyboardEvent<HTMLInputElement>, id: string) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      commitEdit(id)
+    } else if (e.key === 'Escape') {
+      cancelEdit()
+    }
   }
 
   const activeCount = todos.filter(t => !t.completed).length
@@ -87,17 +128,49 @@ function App() {
               onChange={() => toggleTodo(todo.id)}
               style={{ cursor: 'pointer', width: 18, height: 18, flexShrink: 0 }}
             />
-            <label
-              htmlFor={`todo-${todo.id}`}
-              style={{
-                cursor: 'pointer',
-                textDecoration: todo.completed ? 'line-through' : 'none',
-                color: todo.completed ? '#888' : 'inherit',
-                flex: 1,
-              }}
-            >
-              {todo.title}
-            </label>
+            {editingId === todo.id ? (
+              <input
+                ref={editInputRef}
+                value={editValue}
+                onChange={e => setEditValue(e.target.value)}
+                onKeyDown={e => handleEditKeyDown(e, todo.id)}
+                onBlur={() => commitEdit(todo.id)}
+                style={{ flex: 1, padding: '0.25rem 0.375rem', fontSize: '1rem', borderRadius: 3, border: '1px solid #aaa' }}
+                aria-label="Edit todo title"
+              />
+            ) : (
+              <label
+                htmlFor={`todo-${todo.id}`}
+                onDoubleClick={() => startEdit(todo)}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: todo.completed ? 'line-through' : 'none',
+                  color: todo.completed ? '#888' : 'inherit',
+                  flex: 1,
+                }}
+              >
+                {todo.title}
+              </label>
+            )}
+            {editingId !== todo.id && (
+              <button
+                onClick={() => startEdit(todo)}
+                aria-label={`Edit "${todo.title}"`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.125rem 0.25rem',
+                  fontSize: '0.875rem',
+                  color: '#666',
+                  borderRadius: 3,
+                  lineHeight: 1,
+                }}
+                title="Edit"
+              >
+                ✎
+              </button>
+            )}
           </li>
         ))}
       </ul>

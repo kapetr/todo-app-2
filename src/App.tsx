@@ -22,12 +22,15 @@ function saveTodos(todos: Todo[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
 }
 
+type FilterView = 'all' | 'active' | 'completed'
+
 function App() {
   const [todos, setTodos] = useState<Todo[]>(loadTodos)
   const [input, setInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<FilterView>('all')
   const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -104,6 +107,13 @@ function App() {
 
   const activeCount = todos.filter(t => !t.completed).length
   const completedCount = todos.length - activeCount
+
+  const visibleTodos = todos.filter(t => {
+    if (filter === 'active') return !t.completed
+    if (filter === 'completed') return t.completed
+    return true
+  })
+
   return (
     <div style={{ maxWidth: 480, margin: '2rem auto', fontFamily: 'sans-serif', padding: '0 1rem' }}>
       <h1>Todo App</h1>
@@ -120,7 +130,7 @@ function App() {
         </button>
       </div>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {todos.map(todo => (
+        {visibleTodos.map(todo => (
           <li
             key={todo.id}
             onMouseEnter={() => setHoveredId(todo.id)}
@@ -214,6 +224,26 @@ function App() {
       {todos.length > 0 && (
         <footer style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#555', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{activeCount} item{activeCount !== 1 ? 's' : ''} left</span>
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            {(['all', 'active', 'completed'] as FilterView[]).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                style={{
+                  background: 'none',
+                  border: filter === f ? '1px solid #aaa' : '1px solid transparent',
+                  borderRadius: 3,
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  color: '#555',
+                  padding: '0.125rem 0.375rem',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
           {completedCount > 0 && (
             <button
               onClick={clearCompleted}

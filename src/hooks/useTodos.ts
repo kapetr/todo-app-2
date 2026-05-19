@@ -12,7 +12,8 @@ const STORAGE_KEY = 'todo-app-2:todos'
 function loadTodos(): Todo[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Todo[]) : []
+    const todos = raw ? (JSON.parse(raw) as Todo[]) : []
+    return todos.slice().sort((a, b) => b.createdAt - a.createdAt)
   } catch {
     return []
   }

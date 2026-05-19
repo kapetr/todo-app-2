@@ -1,32 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import './App.css'
-
-interface Todo {
-  id: string
-  title: string
-  completed: boolean
-  createdAt: string
-}
-
-const STORAGE_KEY = 'todo-app-2:todos'
-
-function loadTodos(): Todo[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Todo[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveTodos(todos: Todo[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-}
+import { useTodos } from './hooks/useTodos'
 
 type FilterView = 'all' | 'active' | 'completed'
 
 function App() {
-  const [todos, setTodos] = useState<Todo[]>(loadTodos)
+  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted } = useTodos()
   const [input, setInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -40,55 +19,27 @@ function App() {
     }
   }, [editingId])
 
-  function addTodo() {
-    const title = input.trim()
-    if (!title) return
-    const next = [
-      { id: crypto.randomUUID(), title, completed: false, createdAt: new Date().toISOString() },
-      ...todos,
-    ]
-    setTodos(next)
-    saveTodos(next)
+  function handleAdd() {
+    addTodo(input)
     setInput('')
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') addTodo()
+    if (e.key === 'Enter') handleAdd()
   }
 
-  function toggleTodo(id: string) {
-    const next = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
-    setTodos(next)
-    saveTodos(next)
-  }
-
-  function deleteTodo(id: string) {
-    const next = todos.filter(t => t.id !== id)
-    setTodos(next)
-    saveTodos(next)
-  }
-
-  function clearCompleted() {
-    const next = todos.filter(t => !t.completed)
-    setTodos(next)
-    saveTodos(next)
-  }
-
-  function startEdit(todo: Todo) {
-    setEditingId(todo.id)
-    setEditValue(todo.title)
+  function startEdit(id: string, title: string) {
+    setEditingId(id)
+    setEditValue(title)
   }
 
   function commitEdit(id: string) {
     const trimmed = editValue.trim()
-    let next: Todo[]
     if (!trimmed) {
-      next = todos.filter(t => t.id !== id)
+      deleteTodo(id)
     } else {
-      next = todos.map(t => t.id === id ? { ...t, title: trimmed } : t)
+      editTodo(id, trimmed)
     }
-    setTodos(next)
-    saveTodos(next)
     setEditingId(null)
   }
 
@@ -127,7 +78,7 @@ function App() {
           onKeyDown={handleKeyDown}
           placeholder="New todo…"
         />
-        <button className="add-btn" onClick={addTodo}>
+        <button className="add-btn" onClick={handleAdd}>
           Add
         </button>
       </div>
@@ -155,7 +106,7 @@ function App() {
               <label
                 htmlFor={`todo-${todo.id}`}
                 className={`todo-label${todo.completed ? ' todo-label--completed' : ''}`}
-                onDoubleClick={() => startEdit(todo)}
+                onDoubleClick={() => startEdit(todo.id, todo.title)}
               >
                 {todo.title}
               </label>
@@ -163,7 +114,7 @@ function App() {
             {editingId !== todo.id && (
               <div className="todo-actions">
                 <button
-                  onClick={() => startEdit(todo)}
+                  onClick={() => startEdit(todo.id, todo.title)}
                   aria-label={`Edit "${todo.title}"`}
                   className="todo-action-btn todo-action-btn--edit"
                   title="Edit"

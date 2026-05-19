@@ -40,9 +40,7 @@ function App() {
 
   function commitEdit(id: string) {
     const trimmed = editValue.trim()
-    if (!trimmed) {
-      deleteTodo(id)
-    } else {
+    if (trimmed) {
       editTodo(id, trimmed)
     }
     setEditingId(null)

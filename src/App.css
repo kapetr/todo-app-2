@@ -27,6 +27,19 @@
   min-width: 0;
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.add-input--shake {
+  border-color: #ef4444;
+  animation: shake 0.3s ease;
+}
+
 .add-btn {
   padding: 0.5rem 1rem;
   font-size: 1rem;

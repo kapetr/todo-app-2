@@ -104,8 +104,6 @@ function App() {
 
   const activeCount = todos.filter(t => !t.completed).length
   const completedCount = todos.length - activeCount
-  const actionsVisible = (id: string) => hoveredId === id
-
   return (
     <div style={{ maxWidth: 480, margin: '2rem auto', fontFamily: 'sans-serif', padding: '0 1rem' }}>
       <h1>Todo App</h1>
@@ -128,7 +126,7 @@ function App() {
             onMouseEnter={() => setHoveredId(todo.id)}
             onMouseLeave={() => setHoveredId(null)}
             onFocus={() => setHoveredId(todo.id)}
-            onBlur={() => setHoveredId(null)}
+            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHoveredId(null) }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -176,7 +174,7 @@ function App() {
                   onClick={() => startEdit(todo)}
                   aria-label={`Edit "${todo.title}"`}
                   style={{
-                    visibility: actionsVisible(todo.id) ? 'visible' : 'hidden',
+                    visibility: hoveredId === todo.id ? 'visible' : 'hidden',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
@@ -194,7 +192,7 @@ function App() {
                   onClick={() => deleteTodo(todo.id)}
                   aria-label={`Delete "${todo.title}"`}
                   style={{
-                    visibility: actionsVisible(todo.id) ? 'visible' : 'hidden',
+                    visibility: hoveredId === todo.id ? 'visible' : 'hidden',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',

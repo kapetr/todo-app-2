@@ -166,6 +166,11 @@
   text-transform: capitalize;
 }
 
+.filter-btn:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
 .filter-btn--active {
   border-color: #9ca3af;
   color: #1a1a2e;
@@ -179,4 +184,8 @@
   color: #6b7280;
   padding: 0;
   text-decoration: underline;
+}
+
+.clear-btn:hover {
+  color: #374151;
 }

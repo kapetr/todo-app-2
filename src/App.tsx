@@ -148,6 +148,9 @@ function App() {
       {todos.length > 0 && (
         <footer className="footer">
           <span>{activeCount} item{activeCount !== 1 ? 's' : ''} left</span>
+          {completedCount > 0 && (
+            <span>{completedCount} completed</span>
+          )}
           <div className="filter-group" role="group" aria-label="Filter todos">
             {(['all', 'active', 'completed'] as FilterView[]).map(f => (
               <button

@@ -67,7 +67,10 @@ function App() {
         {todos.map(todo => (
           <li
             key={todo.id}
+            role="button"
+            tabIndex={0}
             onClick={() => toggleTodo(todo.id)}
+            onKeyDown={e => e.key === 'Enter' || e.key === ' ' ? toggleTodo(todo.id) : undefined}
             style={{
               padding: '0.5rem',
               marginBottom: '0.5rem',

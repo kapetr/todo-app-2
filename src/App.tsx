@@ -39,11 +39,12 @@ function App() {
   }
 
   function commitEdit(id: string) {
-    const trimmed = editValue.trim()
-    if (trimmed) {
-      editTodo(id, trimmed)
-    }
-    setEditingId(null)
+    setEditingId(prev => {
+      if (prev !== id) return prev
+      const trimmed = editValue.trim()
+      if (trimmed) editTodo(id, trimmed)
+      return null
+    })
   }
 
   function cancelEdit() {

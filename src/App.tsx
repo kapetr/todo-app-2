@@ -27,6 +27,7 @@ function App() {
   const [input, setInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
   const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -54,6 +55,18 @@ function App() {
 
   function toggleTodo(id: string) {
     const next = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
+    setTodos(next)
+    saveTodos(next)
+  }
+
+  function deleteTodo(id: string) {
+    const next = todos.filter(t => t.id !== id)
+    setTodos(next)
+    saveTodos(next)
+  }
+
+  function clearCompleted() {
+    const next = todos.filter(t => !t.completed)
     setTodos(next)
     saveTodos(next)
   }
@@ -91,7 +104,6 @@ function App() {
 
   const activeCount = todos.filter(t => !t.completed).length
   const completedCount = todos.length - activeCount
-
   return (
     <div style={{ maxWidth: 480, margin: '2rem auto', fontFamily: 'sans-serif', padding: '0 1rem' }}>
       <h1>Todo App</h1>
@@ -111,6 +123,10 @@ function App() {
         {todos.map(todo => (
           <li
             key={todo.id}
+            onMouseEnter={() => setHoveredId(todo.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onFocus={() => setHoveredId(todo.id)}
+            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHoveredId(null) }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -153,31 +169,67 @@ function App() {
               </label>
             )}
             {editingId !== todo.id && (
-              <button
-                onClick={() => startEdit(todo)}
-                aria-label={`Edit "${todo.title}"`}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.125rem 0.25rem',
-                  fontSize: '0.875rem',
-                  color: '#666',
-                  borderRadius: 3,
-                  lineHeight: 1,
-                }}
-                title="Edit"
-              >
-                ✎
-              </button>
+              <>
+                <button
+                  onClick={() => startEdit(todo)}
+                  aria-label={`Edit "${todo.title}"`}
+                  style={{
+                    visibility: hoveredId === todo.id ? 'visible' : 'hidden',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.125rem 0.25rem',
+                    fontSize: '0.875rem',
+                    color: '#666',
+                    borderRadius: 3,
+                    lineHeight: 1,
+                  }}
+                  title="Edit"
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={() => deleteTodo(todo.id)}
+                  aria-label={`Delete "${todo.title}"`}
+                  style={{
+                    visibility: hoveredId === todo.id ? 'visible' : 'hidden',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.125rem 0.25rem',
+                    fontSize: '0.875rem',
+                    color: '#c00',
+                    borderRadius: 3,
+                    lineHeight: 1,
+                  }}
+                  title="Delete"
+                >
+                  ✕
+                </button>
+              </>
             )}
           </li>
         ))}
       </ul>
       {todos.length > 0 && (
-        <footer style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#555', display: 'flex', justifyContent: 'space-between' }}>
+        <footer style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#555', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{activeCount} item{activeCount !== 1 ? 's' : ''} left</span>
-          {completedCount > 0 && <span>{completedCount} completed</span>}
+          {completedCount > 0 && (
+            <button
+              onClick={clearCompleted}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                color: '#555',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+            >
+              Clear completed
+            </button>
+          )}
         </footer>
       )}
     </div>
